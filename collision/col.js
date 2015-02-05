@@ -1,21 +1,14 @@
-var map = []; // Or you could call it "key"
-onkeydown = onkeyup = function(e){
-    e = e || event; // to deal with IE
-    map[e.keyCode] = e.type == 'keydown';
-    /*insert conditional here*/
-}
-
-
 var Game = {
 		game: $('.col-game'),
 		gravity: 800,
-		friction: 100
+		friction: 0,
+		maxSpeed: 0.6
 	};
 	Game.width = Game.game.width();
 	Game.height = Game.game.height();
 
 	Game.jumpHeight = ((Game.gravity/25) * 1.25);
-	Game.moveDist = (100/10);
+	Game.moveDist = (Game.width/100)*0.05; // start move distance
 
 	Game.jumpAni = (Game.gravity * 0.3);
 	Game.fallAni = (Game.gravity * 0.3);
@@ -38,8 +31,6 @@ var Player = {
 
 var p = $('.col-player');
 
-var x = 0;
-
 	/////////// Movements /////////////
 
 	function jump(){
@@ -58,43 +49,47 @@ var x = 0;
 		}
 	}
 
+	/* 
+	 *	Alyways work from the left, even if moving right
+	 */
 	function moveRight(){
-		p.animate({left: "+=" + Game.moveDist}, {duration: Game.moveAni, queue: false}, function(){
-		});
+		p.css("left", "+=" + Game.moveDist);
 		renderDebug("moveRight");
 	}
 
 	function moveLeft(){
-		p.animate({left: "-=" + Game.moveDist}, {duration: Game.moveAni, queue: false}, function(){
-		});
+		p.css("left", "-=" + Game.moveDist);
 		renderDebug("moveLeft");
 	}
 
 	////////// End Movements //////////
 
-
-
+	var map = [];
+	var x = 0; // debug
 	game.keydown(function(){
-		x++;
-		$( ".debug-key" ).text(event.which);
-		switch(event.which){
-			case 37:
-			 	Player.actions.moveLeft();
-			 	break;
-		 	case 38:
-		 		Player.actions.jump();
-		 		break;
-			case 39:
-			 	Player.actions.moveRight();
-			 	break;
-			// case 40:
-			// 	Player.actions.fall();
-			// 	break;
-		}
+		var e = e || event; // to deal with IE
+		map[e.keyCode] = e.type == 'keydown';
+
+		
+
+		if(map[37])
+			Player.actions.moveLeft();
+		if(map[38])
+		 	Player.actions.jump();
+		if(map[39])
+			Player.actions.moveRight();
+		if(map[40])
+			Player.actions.fall();
+	
+		x++; //debug
+		$( ".debug-key" ).text(e.keyCode);
 	});
 
 	game.keyup(function(){
-		x=0;
+		var e = e || event; // to deal with IE
+			map[e.keyCode] = e.type == 'keydown';
+		
+		x = 0; //debug
 		renderDebug();
 	});
 
