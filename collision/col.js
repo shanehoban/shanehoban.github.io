@@ -1,23 +1,25 @@
 var Game = {
 		game: $('.col-game'),
 		gravity: 800,
-		friction: 0,
-		maxSpeed: 0.6
+		startSpeed: 0.02,
+		maxSpeed: 1,
+		acceleration: 0.05,
+		friction: 1
 	};
 	Game.width = Game.game.width();
 	Game.height = Game.game.height();
 
-	Game.jumpHeight = ((Game.gravity/25) * 1.25);
-	Game.moveDist = (Game.width/100)*0.05; // start move distance
+	Game.jumpHeight = ((Game.gravity/25) * 1.25); // start @ 40 on
+	Game.moveDist = (Game.width/100)*Game.startSpeed; // start move distance @ 0.1
 
 	Game.jumpAni = (Game.gravity * 0.3);
 	Game.fallAni = (Game.gravity * 0.3);
 
 var game = Game.game;
-	game.focus();
-x
+	game.focus(); // so don't have to click div
 
 var Player = {
+		currentSpeed: 0,
 		actions: {
 			jump: jump,
 			moveRight: moveRight,
@@ -31,7 +33,7 @@ var Player = {
 
 var p = $('.col-player');
 
-	/////////// Movements /////////////
+/////////// Movements /////////////
 
 	function jump(){
 		if(!Player.isJumping && !Player.isFalling){
@@ -49,28 +51,60 @@ var p = $('.col-player');
 		}
 	}
 
+
+
 	/* 
 	 *	Alyways work from the left, even if moving right
 	 */
 	function moveRight(){
+		Player.isMovingRight = true;
+
+		if(Player.isMovingRight == true && Player.currentSpeed < Game.maxSpeed){
+			Player.currentSpeed += (Player.currentSpeed === 0) ? Game.startSpeed : 0;
+			console.log("currentSpeed", Player.currentSpeed);
+			Player.currentSpeed = (Player.currentSpeed+(Game.acceleration/Game.friction)) ;
+			console.log("Game.moveDist", Game.moveDist);
+			Game.moveDist = (Game.width/100) * Player.currentSpeed;
+		}
+
 		p.css("left", "+=" + Game.moveDist);
 		renderDebug("moveRight");
 	}
 
+
+
+
+	/* 
+	 *	Alyways work from the left, even if moving right
+	 */
 	function moveLeft(){
+		Player.isMovingRight = true;
+
+		if(Player.isMovingRight == true && Player.currentSpeed < Game.maxSpeed){
+			Player.currentSpeed += (Player.currentSpeed === 0) ? Game.startSpeed : 0;
+			console.log("currentSpeed", Player.currentSpeed);
+			Player.currentSpeed = (Player.currentSpeed+(Game.acceleration/Game.friction)) ;
+			console.log("Game.moveDist", Game.moveDist);
+			Game.moveDist = (Game.width/100) * Player.currentSpeed;
+		}
+
 		p.css("left", "-=" + Game.moveDist);
-		renderDebug("moveLeft");
+		renderDebug("moveRight");
 	}
 
-	////////// End Movements //////////
 
-	var map = [];
+
+
+////////// End Movements //////////
+
+
+
 	var x = 0; // debug
+	var map = [];
 	game.keydown(function(){
+		
 		var e = e || event; // to deal with IE
 		map[e.keyCode] = e.type == 'keydown';
-
-		
 
 		if(map[37])
 			Player.actions.moveLeft();
@@ -85,13 +119,27 @@ var p = $('.col-player');
 		$( ".debug-key" ).text(e.keyCode);
 	});
 
+
+
+
 	game.keyup(function(){
 		var e = e || event; // to deal with IE
 			map[e.keyCode] = e.type == 'keydown';
+
+		if(!map[37]){
+			Player.isMovingLeft = false;
+			Player.currentSpeed = 0;
+		}
+		if(!map[39]){
+			Player.isMovingRight = false;
+			Player.currentSpeed = 0;
+		}
 		
 		x = 0; //debug
 		renderDebug();
 	});
+
+
 
 
 	/////////// Debug /////////////////
@@ -100,14 +148,9 @@ var p = $('.col-player');
 
 		$('.debug-height').text(Game.height);
 		$('.debug-width').text(Game.width);
-
 		$('.debug-button-down-count').text(x);
-
 		$('.debug-last-action').text(action);
-
 		$('.debug-player-top').text(p.offset().top);
-	//	$('.debug-player-bottom').text(p.offset().top);
-	//	$('.debug-player-left').text(p.offset().top);
-	//	$('.debug-player-right').text(p.offset().top);
+		$('.debug-speed').text(Math.round(Player.currentSpeed*100)/100);
 	}
 	renderDebug();
