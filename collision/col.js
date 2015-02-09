@@ -1,30 +1,25 @@
 var Game = {
 		game: $('.col-game'),
-		gravity: 800,
+		gravity: 1,
+		friction: 1,
+
 		startSpeed: 0.02,
-		maxSpeed: 1,
-		acceleration: 0.05,
-		friction: 1
+		maxSpeed: 0.5,
+		jumpSpeed: 0.5,
+		acceleration: 0.01,
+		deceleration: 0.01,
+
+		reDrawMs: 10
 	};
 	Game.width = Game.game.width();
 	Game.height = Game.game.height();
-
-	Game.jumpHeight = ((Game.gravity/25) * 1.25); // start @ 40 on
-	Game.moveDist = (Game.width/100)*Game.startSpeed; // start move distance @ 0.1
-
-	Game.jumpAni = (Game.gravity * 0.3);
-	Game.fallAni = (Game.gravity * 0.3);
 
 var game = Game.game;
 	game.focus(); // so don't have to click div
 
 var Player = {
 		currentSpeed: 0,
-		actions: {
-			jump: jump,
-			moveRight: moveRight,
-			moveLeft: moveLeft,
-			},
+		currentJumpHeight: 0,
 		isJumping: false,
 		isFalling: false,
 		isMovingRight: false,
@@ -33,65 +28,64 @@ var Player = {
 
 var p = $('.col-player');
 
+
+Game.recalc = function(){
+	Game.maxJumpHeight = (Game.height/100)*(Game.gravity*8); // 8% of height (eg. 40 @ 500px)
+	Game.moveDist = (Game.width/100)*Game.startSpeed; // 0.02% (acceleration also comes into play)
+};
+
 /////////// Movements /////////////
 
-	function jump(){
-		if(!Player.isJumping && !Player.isFalling){
-			Player.isJumping = true;
-				p.animate({bottom: "+=" + Game.jumpHeight}, Game.jumpAni, function(){
-					Player.isJumping = false;
-					Player.isFalling = true;
-						p.animate({bottom: "-="+ Game.jumpHeight}, Game.fallAni, function(){
-							setTimeout(function(){
-								Player.isFalling = false;
-								}, 100);
-						});
-				});
-			renderDebug("jump");
-		}
-	}
+	Player.jump = function(){
 
+		Player.currentJumpHeight = (Player.currentJumpHeight === 0) ? Game.jumpSpeed : Player.currentJumpHeight;
+		p.css("bottom", "+=" + Game.jumpSpeed);
+		
+		Game.jumpSpeed -= (Game.gravity/100);
 
+		setTimeout(function(){ 
+			Player.jump();
+				}, Game.reDrawMs);
 
-	/* 
-	 *	Alyways work from the left, even if moving right
-	 */
-	function moveRight(){
-		Player.isMovingRight = true;
+		renderDebug("jump");
+	};
 
-		if(Player.isMovingRight == true && Player.currentSpeed < Game.maxSpeed){
-			Player.currentSpeed += (Player.currentSpeed === 0) ? Game.startSpeed : 0;
-			console.log("currentSpeed", Player.currentSpeed);
-			Player.currentSpeed = (Player.currentSpeed+(Game.acceleration/Game.friction)) ;
-			console.log("Game.moveDist", Game.moveDist);
-			Game.moveDist = (Game.width/100) * Player.currentSpeed;
-		}
+	Player.fall = function(){
 
-		p.css("left", "+=" + Game.moveDist);
-		renderDebug("moveRight");
-	}
-
-
+	};
 
 
 	/* 
 	 *	Alyways work from the left, even if moving right
 	 */
-	function moveLeft(){
-		Player.isMovingRight = true;
-
-		if(Player.isMovingRight == true && Player.currentSpeed < Game.maxSpeed){
+	Player.moveRight = function(){
+		if(Player.isMovingRight){
 			Player.currentSpeed += (Player.currentSpeed === 0) ? Game.startSpeed : 0;
-			console.log("currentSpeed", Player.currentSpeed);
 			Player.currentSpeed = (Player.currentSpeed+(Game.acceleration/Game.friction)) ;
-			console.log("Game.moveDist", Game.moveDist);
+			Player.currentSpeed = (Player.currentSpeed >= Game.maxSpeed) ? Game.maxSpeed : Player.currentSpeed;
 			Game.moveDist = (Game.width/100) * Player.currentSpeed;
+			p.css("left", "+=" + Game.moveDist);
+				setTimeout(function(){ 
+					Player.moveRight(); 
+				}, Game.reDrawMs);
 		}
-
-		p.css("left", "-=" + Game.moveDist);
 		renderDebug("moveRight");
-	}
+	};
 
+
+	Player.moveLeft = function(){
+		if(Player.isMovingLeft){
+			Player.currentSpeed += (Player.currentSpeed === 0) ? Game.startSpeed : 0;
+			Player.currentSpeed = (Player.currentSpeed+(Game.acceleration/Game.friction)) ;
+			Player.currentSpeed = (Player.currentSpeed >= Game.maxSpeed) ? Game.maxSpeed : Player.currentSpeed;
+			Game.moveDist = (Game.width/100) * Player.currentSpeed;
+			p.css("left", "-=" + Game.moveDist);
+				setTimeout(function(){
+					Player.moveLeft(); 
+				}, Game.reDrawMs);
+		}
+		renderDebug("moveLeft");
+	};
 
 
 
@@ -99,21 +93,34 @@ var p = $('.col-player');
 
 
 
+	// Left: 37, Jump: 38, Right: 39, Down: 40
 	var x = 0; // debug
 	var map = [];
 	game.keydown(function(){
-		
+		Game.recalc();
+
 		var e = e || event; // to deal with IE
 		map[e.keyCode] = e.type == 'keydown';
 
-		if(map[37])
-			Player.actions.moveLeft();
-		if(map[38])
-		 	Player.actions.jump();
-		if(map[39])
-			Player.actions.moveRight();
-		if(map[40])
-			Player.actions.fall();
+			// if both are pressed, cancel the incoming movement
+		if(map[37] && Player.isMovingLeft) map[39] = false;
+		if(map[39] && Player.isMovingRight) map[37] = false;
+
+		if(map[37] && !Player.isMovingLeft){
+			Player.isMovingLeft = true;
+			Player.moveLeft();
+		}
+		if(map[38] && !Player.isJumping && !Player.isFalling){
+			Player.isJumping = true;
+		 	Player.jump();
+		}
+		if(map[39] && !Player.isMovingRight){
+			Player.isMovingRight = true;
+			Player.moveRight();
+		}
+		if(map[40]){
+			Player.fall();
+		}
 	
 		x++; //debug
 		$( ".debug-key" ).text(e.keyCode);
@@ -121,8 +128,11 @@ var p = $('.col-player');
 
 
 
-
+	
+	// Left: 37, Jump: 38, Right: 39, Down: 40
 	game.keyup(function(){
+		Game.recalc();
+
 		var e = e || event; // to deal with IE
 			map[e.keyCode] = e.type == 'keydown';
 
@@ -138,7 +148,6 @@ var p = $('.col-player');
 		x = 0; //debug
 		renderDebug();
 	});
-
 
 
 
