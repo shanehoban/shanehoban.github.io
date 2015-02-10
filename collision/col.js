@@ -2,13 +2,10 @@ var Game = {
 		game: $('.col-game'),
 		gravity: 1,
 		friction: 1,
-
 		startSpeed: 0.02,
 		maxSpeed: 0.5,
-		jumpSpeed: 0.5,
 		acceleration: 0.01,
 		deceleration: 0.01,
-
 		reDrawMs: 10
 	};
 	Game.width = Game.game.width();
@@ -19,7 +16,7 @@ var game = Game.game;
 
 var Player = {
 		currentSpeed: 0,
-		currentJumpHeight: 0,
+		currentJump: 0,
 		isJumping: false,
 		isFalling: false,
 		isMovingRight: false,
@@ -30,28 +27,52 @@ var p = $('.col-player');
 
 
 Game.recalc = function(){
-	Game.maxJumpHeight = (Game.height/100)*(Game.gravity*8); // 8% of height (eg. 40 @ 500px)
 	Game.moveDist = (Game.width/100)*Game.startSpeed; // 0.02% (acceleration also comes into play)
+	
+	Game.maxJumpHeight = (Game.height/100)*(Game.gravity*10);
+	Game.jumpAcceleration = ((Game.maxJumpHeight/100)*5)/Game.gravity;
 };
 
 /////////// Movements /////////////
 
 	Player.jump = function(){
+		Game.recalc();
 
-		Player.currentJumpHeight = (Player.currentJumpHeight === 0) ? Game.jumpSpeed : Player.currentJumpHeight;
-		p.css("bottom", "+=" + Game.jumpSpeed);
-		
-		Game.jumpSpeed -= (Game.gravity/100);
+		if(Player.currentJump >= Game.maxJumpHeight){
+			Player.isJumping = false;
+			Player.isFalling = true;
+			Player.fall();
+			return;
+		}
 
-		setTimeout(function(){ 
-			Player.jump();
-				}, Game.reDrawMs);
+		Player.currentJump += Game.jumpAcceleration;
+		p.css("bottom", Player.currentJump);
+
+			setTimeout(function(){ 
+				Player.jump();
+			}, Game.reDrawMs);
 
 		renderDebug("jump");
 	};
 
 	Player.fall = function(){
+		Game.recalc();
 
+		if(Player.currentJump <= 0){
+			Player.isJumping = false;
+			Player.isFalling = false;
+			return;
+		}
+
+
+		Player.currentJump -= Game.jumpAcceleration;
+		p.css("bottom", Player.currentJump);
+
+			setTimeout(function(){ 
+				Player.fall();
+			}, Game.reDrawMs);
+
+		renderDebug("jump");
 	};
 
 
@@ -59,6 +80,8 @@ Game.recalc = function(){
 	 *	Alyways work from the left, even if moving right
 	 */
 	Player.moveRight = function(){
+		Game.recalc();
+
 		if(Player.isMovingRight){
 			Player.currentSpeed += (Player.currentSpeed === 0) ? Game.startSpeed : 0;
 			Player.currentSpeed = (Player.currentSpeed+(Game.acceleration/Game.friction)) ;
@@ -74,6 +97,8 @@ Game.recalc = function(){
 
 
 	Player.moveLeft = function(){
+		Game.recalc();
+
 		if(Player.isMovingLeft){
 			Player.currentSpeed += (Player.currentSpeed === 0) ? Game.startSpeed : 0;
 			Player.currentSpeed = (Player.currentSpeed+(Game.acceleration/Game.friction)) ;
@@ -159,7 +184,11 @@ Game.recalc = function(){
 		$('.debug-width').text(Game.width);
 		$('.debug-button-down-count').text(x);
 		$('.debug-last-action').text(action);
-		$('.debug-player-top').text(p.offset().top);
 		$('.debug-speed').text(Math.round(Player.currentSpeed*100)/100);
+		$('.debug-player-current-jump').text(Player.currentJump);
+
+
+		$('.debug-player-top').text(p.position().top);
+		$('.debug-player-left').text(p.position().left);
 	}
 	renderDebug();
