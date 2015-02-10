@@ -28,7 +28,7 @@ var p = $('.col-player');
 
 Game.recalc = function(){
 	Game.moveDist = (Game.width/100)*Game.startSpeed; // 0.02% (acceleration also comes into play)
-	
+
 	Game.maxJumpHeight = (Game.height/100)*(Game.gravity*10);
 	Game.jumpAcceleration = ((Game.maxJumpHeight/100)*5)/Game.gravity;
 };
@@ -38,6 +38,9 @@ Game.recalc = function(){
 	Player.jump = function(){
 		Game.recalc();
 
+		Player.currentJump += Game.jumpAcceleration;
+		p.css("bottom", Player.currentJump);
+
 		if(Player.currentJump >= Game.maxJumpHeight){
 			Player.isJumping = false;
 			Player.isFalling = true;
@@ -45,12 +48,9 @@ Game.recalc = function(){
 			return;
 		}
 
-		Player.currentJump += Game.jumpAcceleration;
-		p.css("bottom", Player.currentJump);
-
-			setTimeout(function(){ 
-				Player.jump();
-			}, Game.reDrawMs);
+		setTimeout(function(){
+			Player.jump();
+		}, Game.reDrawMs);
 
 		renderDebug("jump");
 	};
@@ -64,19 +64,18 @@ Game.recalc = function(){
 			return;
 		}
 
-
 		Player.currentJump -= Game.jumpAcceleration;
 		p.css("bottom", Player.currentJump);
 
-			setTimeout(function(){ 
-				Player.fall();
-			}, Game.reDrawMs);
+		setTimeout(function(){
+			Player.fall();
+		}, Game.reDrawMs);
 
 		renderDebug("jump");
 	};
 
 
-	/* 
+	/*
 	 *	Alyways work from the left, even if moving right
 	 */
 	Player.moveRight = function(){
@@ -88,8 +87,8 @@ Game.recalc = function(){
 			Player.currentSpeed = (Player.currentSpeed >= Game.maxSpeed) ? Game.maxSpeed : Player.currentSpeed;
 			Game.moveDist = (Game.width/100) * Player.currentSpeed;
 			p.css("left", "+=" + Game.moveDist);
-				setTimeout(function(){ 
-					Player.moveRight(); 
+				setTimeout(function(){
+					Player.moveRight();
 				}, Game.reDrawMs);
 		}
 		renderDebug("moveRight");
@@ -106,7 +105,7 @@ Game.recalc = function(){
 			Game.moveDist = (Game.width/100) * Player.currentSpeed;
 			p.css("left", "-=" + Game.moveDist);
 				setTimeout(function(){
-					Player.moveLeft(); 
+					Player.moveLeft();
 				}, Game.reDrawMs);
 		}
 		renderDebug("moveLeft");
@@ -146,14 +145,14 @@ Game.recalc = function(){
 		if(map[40]){
 			Player.fall();
 		}
-	
+
 		x++; //debug
 		$( ".debug-key" ).text(e.keyCode);
 	});
 
 
 
-	
+
 	// Left: 37, Jump: 38, Right: 39, Down: 40
 	game.keyup(function(){
 		Game.recalc();
@@ -169,7 +168,7 @@ Game.recalc = function(){
 			Player.isMovingRight = false;
 			Player.currentSpeed = 0;
 		}
-		
+
 		x = 0; //debug
 		renderDebug();
 	});

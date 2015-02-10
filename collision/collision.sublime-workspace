@@ -19,7 +19,7 @@
 			"file": "index.html",
 			"settings":
 			{
-				"buffer_size": 820,
+				"buffer_size": 945,
 				"line_ending": "Windows"
 			}
 		},
@@ -27,15 +27,7 @@
 			"file": "col.js",
 			"settings":
 			{
-				"buffer_size": 3789,
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "/C/Users/a560313/Desktop/.txt",
-			"settings":
-			{
-				"buffer_size": 868,
+				"buffer_size": 4287,
 				"line_ending": "Windows"
 			}
 		},
@@ -45,17 +37,6 @@
 			{
 				"buffer_size": 606,
 				"line_ending": "Windows"
-			}
-		},
-		{
-			"contents": "#!/bin/bash\n# jenkinsDeploy.ksh makes necessary changes to deploy a web application war running on Fidelity's LAS server.\n# 12/01/2015\n\n # Load some environment variables\n. ../config/deployConfig.ksh\n\n########################\n# Script Configuration\n########################\n\n######### START app specific settings\n\n#The root of the application.  This directory is used many times. Make sure it points to the right place.\nhome=${home}\n\n\n\n#The name of the war file which will be exploded.  This file sits in the staging_dir\nwebAppWarFileName=${webAppWarFileName}\n\n#The directory of the application inside the webapps. Most likely the same name as the war file.\nwebAppDir=${webAppDir}\n\n#Name of the archive script to run when archiving\narchiveScript=${archiveScript}\n\n#Prefix of the clear case brach\nbuildForgeNamePrefix=${buildForgeNamePrefix}\n#Prefix of the stash brach\njenkinsNamePrefix=${jenkinsNamePrefix}\n#The root directory where the application builds are mounted\nbuildForgeRoot=${buildForgeRoot}\n#The root directory where the application builds are mounted\njenkinsRoot=${jenkinsRoot}\n\n\n\n########## END app specific settings\n\n#somewhat static directories\ntomcatBin=\"$home/tcserver/fmr-bin\"\napacheBin=\"$home/ers/servers/$webAppDir/bin\"\nworkCache=\"$home/tcserver/tomcat/vm1/work/Catalina/localhost/$webAppDir\"\nstaging=\"$home/staging_dir\"\nreleases=\"$home/Releases\"\nwebapps=\"$home/tcserver/tomcat/vm1/webapps\"\nroot=\"$webapps/ROOT\"\nclasses=\"$webapps/$webAppDir/WEB-INF/classes\"\nlib=\"$webapps/$webAppDir/WEB-INF/lib\"\nlogs=\"$tomcatBin/log/vm1\"\narchives=\"$tomcatBin/log/archive\"\nappBin=\"$home/bin\"\nappArchive=\"$home/archives\"\n\n\n\n#somewhat static build forge directories\nbuildForgeVer=\"XX.XX.XX\" \nbuildForgeDev=\"$buildForgeRoot/DevBuilds\"\nbuildForgeInt=\"$buildForgeRoot/New\"\njenkinsBuild=\"XX\"\n\n\n#global variables used in script\nargs=\"$@\"\nhtml=0\nstream=\"0\"\njenkinsBuild=\"0\"\ntib=0\nlog=0\napplog=0\nrep=0\nversionNum=\"0\"\nreleaseDir=0\nvalid=0\nhelp=0\nstreamValid=0\nbuildValid=0\nmanual=0\nwarFileName=\"0\"\nknown=0\nindexFile=\"index.html\"\nbuildForgeCurrentDirectory=\"0\"\napache=0\n\n\n########################\n# Script Start\n########################\n\necho \"==============================================================================================\"\necho \" GFIR Web App Automated Deployment Tool\"\necho \"==============================================================================================\"\n\nfor i in $args\ndo\n	#echo \"Found argument '$i'\"\n	known=0\n\n	if [ $i == \"-help\" -o $i == \"/?\" -o $i == \"?\" -o $i == \"help\" ]\n	then	\n		help=1\n		echo \"Help/Instructions will be shown!\"\n		known=1\n	fi		\n			\n	if [ $i == \"-log\" ]\n	then	\n		log=1\n		echo \"Logs will be archived before deployment!\"\n		known=1\n	fi\n		\n	if [ ${i:0:3} == \"-v=\" ]\n	then	\n		versionNum=${i:3}\n		echo \"Version number $versionNum!\"\n		known=1\n	fi\n		\n	if [ ${i:0:4} == \"-bf=\" ]\n	then	\n		jenkinsBuild=${i:4}\n		echo \"Build forge number: $jenkinsBuild will be deployed!\"\n		known=1\n	fi	\n	\n	if [ $i == \"-apache\" ]\n	then	\n		echo \"Apache will be recycled with the deployment\"\n		apache=1\n		known=1\n	fi	\n	\n	if [ ${i:0:4} == \"-st=\" ]\n	then	\n		stream=${i:4:1}\n		if [ $stream == \"d\" ]\n		then\n			echo \"Development stream will be used!\"\n			known=1\n		fi\n		if [ $stream == \"i\" ]\n		then\n			echo \"Integration stream will be used!\"\n			known=1\n		fi\n	fi	\n	\n	#used when a server doesn't have build forge directories mapped\n	#	or an specific war file needs to be deployed\n	if [ ${i:0:6} == \"-file=\" ]\n	then	\n		warFileName=${i:6}\n		manual=1\n		echo \"War file: $warFileName will be manually deployed!\"\n		known=1\n	fi	\n	\n	if [ $known -ne 1 ]\n	then\n	\n		echo \"\n		\nThis confused me: '$i'\"\n		echo \"\n		\nWARNING: An argument was passed that I don't know what do to with.  Please ensure you have entered script arguments correctly.  You can run the script with '?' or 'help' for more info.\n		\"		\n		sleep 7\n		echo \"I will figure it out on my own.\"\n		sleep 2\n		echo \"Ok here goes!\"\n		sleep 1\n		echo \".\"\n		sleep 1\n		echo \"..\"\n		sleep 1\n		echo \"...\n		\"\n	fi\n	\ndone\n			\nif [ $manual -ne 1 ] && [ $help -ne 1 ]\nthen\n	if [ $stream == \"0\" ] \n	then\n		echo \"Which stream would you like to use: Dev ('d') or Integration ('i')?\"\n		read temp\n		echo \"You entered: '$temp'\"\n		stream=${temp:0:1}\n	fi\n	\n	versionNumValid=0\n	if [ $versionNum != \"0\" ]\n	then\n		versionNumLength=${#versionNum}\n		if [ $versionNumLength -eq 3 ]\n		then\n			jenkinsVer=\"0${versionNum:0:1}.0${versionNum:2:1}.00\"			\n		elif [ $versionNumLength -eq 5 ]\n		then\n			jenkinsVer=\"0${versionNum:0:1}.0${versionNum:2:1}.0${versionNum:4:1}\"			\n		fi\n		\n		echo \"Stash Branch detected: $jenkinsVer \"\n		\n		cd $jenkinsRoot\n		if [ -d $jenkinsVer ]\n		then\n			echo \"Stash branch $jenkinsVer will be used. Detected from version number!\"\n			versionNumValid=1\n			jenkinsRoot=\"$jenkinsRoot$jenkinsVer\"\n			releaseDir=$versionNum\n			echo \"Release directory deducted: $releaseDir\"\n		fi\n		\n	fi	\n	\n	if [ $versionNum == \"0\" -o $versionNumValid == 0 ]\n	then\n	\n		cd $jenkinsRoot\n		\n		echo \"\nStash branches:\n---------------------------------------------------------------\"\n		ls -rt\n		echo \"Please enter the Stash branch number to use (XX.XX.00):\"\n		read jenkinsVer\n		\n		jenkinsVerLength=${#jenkinsVer}\n				\n		if [ $jenkinsVerLength == 5 ]\n		then\n			jenkinsVer=\"$jenkinsVer.00\"\n			echo \"Don't worry I added the .00 for you! Branch: $jenkinsVer will be used!\"			\n		fi\n				\n		echo \"\n		\"	\n		\n		if [ -d $jenkinsVer ]\n		then\n			jenkinsRoot=\"$jenkinsRoot$jenkinsVer\"\n			echo \"Stash branch found!\"\n		else	\n			echo \"ERROR: Stash branche could not be found. Please run script again. Exiting...\"\n			exit\n		fi\n		\n		if [ $versionNum -eq 0 ]\n		then\n			versionNum=\"${jenkinsVer:1:1}.${jenkinsVer:4:1}\"			\n			releaseDir=$versionNum\n			echo \"Release directory deducted: $releaseDir\"							\n		fi\n	fi\n	\n	cd $jenkinsRoot\n#add in when we have dev and new folder branches set up for dev and integration builds.	\n#	buildForgeDev=\"$buildForgeRoot/DevBuilds\"\n#	buildForgeInt=\"$buildForgeRoot/New\"\n		\n#	if [ $stream == \"d\" ]\n#	then\n#		if [ -d $buildForgeDev ]\n#		then\n#			cd $buildForgeDev\n#			streamValid=1\n#			buildForgeCurrentDirectory=$buildForgeDev\n#		else\n#			echo \"ERROR: Build forge directory not found! Maybe the build forge directory has not been setup on this server\"\n#			exit\n#		fi\n#	elif [ $stream == \"i\" ]\n#	then\n#		if [ -d $buildForgeInt ]\n#		then\n#			cd $buildForgeInt\n#			streamValid=1\n#			buildForgeCurrentDirectory=$buildForgeInt\n#		else\n#			echo \"ERROR: Build forge deploy directory has not been setup on this server\"\n#			exit\n#		fi\n#	else\n#		echo \"ERROR: Build forge directory not found! Maybe the build forge directory has not been setup on this server\"\n#		exit\n#	fi\n\n	streamValid=1\n	jenkinsCurrentDirectory=$jenkinsRoot\n	\n	if [ $streamValid -eq 1 ]\n	then\n				\n		if [ $jenkinsBuild == \"0\" ]\n		then\n			\n			echo \"\nLatest builds:\n---------------------------------------------------------------\"\n			ls -rt | tail -5\n			echo \"Please enter the number (02.02.00.XXXX) of the build you would like to deploy:\"\n			read jenkinsBuild\n			echo \"\n			\"\n\n\n\n\n\n		fi\n\n\n		cd \n		if [ -f $jenkinsCurrentDirectory/$jenkinsNamePrefix$jenkinsBuild.zip ]\n		then\n			echo \"Build number [$jenkinsBuild] will be deployed!\"\n\n			buildValid=1\n		else\n			echo \"ERROR: Build not found. Please re-run the script with a valid build forge stream and build number. Run the script with '?' or 'help' for more info.\"\n			exit\n		fi\n		\n	fi\n\n		\n	if [ $streamValid -eq 1 ] && [ $buildValid -eq 1 ]\n	then\n		\n		if [ $releaseDir == \"0\" ]\n		then\n		\n			cd $releases\n			echo \"\nRelease directories:\n---------------------------------------------------------------\"\n\n			ls\n			echo \"Choose the current release number: X.X\"\n			read temp\n			\n			if [ ${temp:0:1} == \"R\" ]\n			then\n				releaseDir=${temp:1}\n			else\n				releaseDir=$temp\n\n			fi	\n		fi\n		valid=1\n	fi\n\nfi\n\nif [ $valid -eq 1 -o $manual -eq 1 ]\nthen\n\n	if [ -d $releases/R$releaseDir ]\n	then\n		echo \"\"\n	else\n		echo \"WARNING: The Release directory could not be found! Would you like me to create '$releases/R$releaseDir' for you? (y/n)\"\n		read makeReleaseDir\n		\n		if [ $makeReleaseDir == \"y\" ]\n		then\n			mkdir $releases/R$releaseDir\n		fi\n	fi\n\n	#Verify the Release directory exists\n	if [ -d $releases/R$releaseDir ]\n	then\n			echo \"Release directory: R$releaseDir exists!\"\n			echo \"Manual Flag: $manual\"\n			\n			if [ $manual -eq 0 ]\n			then\n				echo \"Entering $jenkinsCurrentDirectory...\" \n\n				cd $jenkinsCurrentDirectory\n				\n				cp $jenkinsNamePrefix$jenkinsBuild.zip $releases/R$releaseDir\n				cd $releases/R$releaseDir\n				\n				unzip $releases/R$releaseDir/$jenkinsNamePrefix$jenkinsBuild.zip -d $releases/R$releaseDir\n				echo \"files extracted from: $releases/R$releaseDir/$jenkinsNamePrefix$jenkinsBuild.zip to $releases/R$releaseDir/\"\n				mv $releases/R$releaseDir/pkg/fi.ba.web-2.2.0.war $releases/R$releaseDir/fibat.war\n				echo \"renamed $releases/R$releaseDir/pkg/fi.ba.web-2.2.0.war to $releases/R$releaseDir/fibat.war\"\n				echo \"removing unnecessary files from $releases/R$releaseDir/\"\n				rm -r $releases/R$releaseDir/pkg\n				rm -r $jenkinsNamePrefix$jenkinsBuild.zip\n				echo \"files removed\"\n				\n				echo \"warFileName: $warFileName\"\n				warFileName=$(ls | grep *.war)\n				echo \"War File: $warFileName\n				\"\n			fi\n	else\n			echo \"ERROR: The Release directory could not be found! Please create directory: '$releases/R$releaseDir' and try again.  Exiting....\"\n			exit\n	fi\n\n\n	#Verify the new war file exists\n\n	cd $releases/R$releaseDir\n	\n	\n	if [ -e $warFileName ]\n	then\n			echo \"File '$warFileName' exists!\"\n	else\n			echo \"ERROR: The file '$warFileName' could not be found.  Exiting....\"\n			exit\n	fi\n\n	echo \"Everything looks good!  The new war file: '$warFileName' will be deployed!\n	\"	\n	sleep 1\n	\n	if [ $apache -eq 0 ] \n	then\n		echo \"##################################################################################\n		\"\n		echo \"Just to let you know... you did NOT pass the '-apache' parameter....\nThis means I will not recycle the apache instance for you.\n		\"\n		echo \"If your web app uses an apache server this deployment MAY NOT function properly.  \nNow would be a good time to Ctrl+C and re-run this script...\"\n		sleep 7\n		echo \"...\"\n		sleep 1\n		echo \"...\"\n		sleep 1\n		echo \"...\"\n		sleep 1\n		echo \"...\"\n		sleep 1\n		echo \"OK I will continue now.\n		\"\n		echo \"##################################################################################\n		\"	\n	fi\n	sleep 2	\n\n	if [ $apache -eq 1 ] \n	then\n		echo \"Bringing down apache...\"\n		cd $apacheBin\n		./apache_startup.sh stop\n		echo \"Apache has been brought down!\n		\"\n	fi\n	sleep 7	\n	\n	echo \"Bringing down the tomcat instance...\"\n	cd $tomcatBin\n	./stopServer.sh\n	echo \"The tomcat instance has been brought down!\n	\"\n	sleep 5	\n\n	echo \"Removing the old $webAppWarFileName war...\"\n	cd $staging\n	rm $webAppWarFileName\n	echo \"The old $webAppWarFileName has been removed!\"\n	sleep 2	\n	\n	echo \"Removing the $webAppDir in webapps...\"\n	cd $webapps\n	rm -r $webAppDir\n	echo \"The $webAppDir directory under webapps has been removed!\n	\"\n	sleep 2\n	\n	echo \"Removing the cached contents in $workCache ...\"\n	cd $workCache\n	rm -r *\n	echo \"The $workCache directory has been cleared!\n	\"\n	sleep 2	\n	\n	echo \"Coping new war file to staging_dir/$webAppWarFileName...\"\n	cd $releases/R$releaseDir\n	cp $warFileName $staging/$webAppWarFileName\n	echo \"$webAppWarFileName has been copied!\n\n	\"\n	sleep 5\n	\n	\n	#Archive/Delete logs\n	if [ $applog -eq 1 ]\n	then\n		echo \"Archiving $webAppDir logs...\"\n		if [ -d $appArchive ]\n		then\n			echo \"Archive directory exists... \"						\n		else\n			cd $home\n			mkdir archives\n			echo \"Archive directory created... archiving $webAppDir logs now\"\n		fi\n		\n		cd $appBin\n		./$archiveScript\n		\n		sleep 3\n		echo \"Archiving $webAppDir done...\n		\"\n	fi\n		\n	#Start the tcServer to uncompress the war\n	echo \"\n\"\n	echo \"Bringing up the server...\"\n	cd $tomcatBin\n	./startServer.sh\n	echo \"The server has been started! Please wait while the war is deployed...\"\n	\n	sleep 2\n	echo \".\"\n	sleep 3\n	echo \"..\"\n	sleep 2\n	echo \"...\"\n	sleep 3\n	echo \"....\"\n	sleep 2\n	echo \".....\"\n	sleep 3\n	echo \"......\"\n	sleep 2\n	echo \".......\"\n	sleep 3\n	echo \"........\"\n	sleep 2\n	echo \".........\"\n	sleep 3\n	echo \"..........\"\n	sleep 3\n	echo \"...........\"\n	\n	sleep 10\n	\n	echo \"----------------------------------------------------------------------------------------------\n	\n	\"\n	sleep 1\n		\n	if [ $apache -eq 1 ] \n	then\n		echo \"Bringing up apache...\"\n		cd $apacheBin\n		./apache_startup.sh startssl\n		echo \"Apache has been restarted!\n		\"\n	fi\n	sleep 5\n	\n	looksGood=0\n	\n	echo \"Verifying the deployment...\"\n	sleep 3\n\n	\n	if [ -d $webapps/$webAppDir ]\n	then\n			echo \"$webAppDir directory exists!\"\n			if [ -d $classes ]\n			then\n					echo \"$classes directory exists!\"\n					echo \"It appears that $warFileName has been deployed successfully!\"\n								\n			else\n					echo \"ERROR: The '$classes' directory does not exist.  The deployment failed.  Please try again or deploy manually.  Sorry.  Exiting...\"\n					exit\n			fi\n			\n	else\n			echo \"ERROR: The $webAppDir  directory does not exist.  The deployment failed.  Please try again or deploy manually.  Sorry.  Exiting...\"\n			exit\n	fi\n\n\n	echo \"\n\"				\n	echo \"The GFIR Web App Automated Deployment Tool has completed!\n	\n	\"\n\nelse\n	echo \"\n---------------------------------------------------------------------------------------------------------------------------------\nPlease read below for proper use of this deployment script.  For further questions or praise please contact 'FI-FCM Tech Support'\n---------------------------------------------------------------------------------------------------------------------------------\n	\"\n\n	echo \"\nThe script can simply be run as  './deploy.sh' to run. No parameters are required.\n	\n	OPTIONAL ARGUMENTS:\n\n	-file		Will manually deploy a war file from the Releases directory\n	-apache		Will bring down the apache server before deployment, and bring it up again once it is finished.\n	-log		Will archive and clear the application and tomcat logs before bringing up the server\n	-st=d		Sets the build forge stream to dev\n	-st=i		Sets the build forge stream to integration\n	-bf=XXXX	Sets the build forge number to deploy.  Example: -bf=32 or -bf=0032\n	-v=X.X.X	Sets the release version. Do NOT include leading or trailing zeros. Example: -v=1.1, -v=1.2, -v=1.3, -v=1.3.1\n\n	EXAMPLES:\n	\n	./deploy.sh -log\n	This will archive both set of logs.  It will prompt for the build forge release and stream.\n\n	./deploy.sh -log -v=1.2 -st=d -bf=32\n	This will archive everything and deploy build forge release number 32 in the dev stream using the 01.02.00 clearcase branche and R1.2 Releases folder.  This command requires no input from the user.\n\n	./deploy.sh -v=1.2 -file=fibat-1.2.26.war\n	This will manually deploy the war file “fibat-1.2.26.war” from the Releases/R1.2 directory.\n\n	\"\nfi",
-			"file": "/C/Users/a560313/AppData/Local/Temp/scp48587/fidsadm/ProdApp/FI_WEB/FIBAT/bin/jenkinsDeploy.ksh",
-			"file_size": -1,
-			"file_write_time": -1,
-			"settings":
-			{
-				"buffer_size": 14665,
-				"line_ending": "Unix"
 			}
 		}
 	],
@@ -95,10 +76,12 @@
 	},
 	"expanded_folders":
 	[
-		"/C/Users/a560313/Desktop/shanehoban.github.io/collision"
+		"/C/xampp/htdocs/web/shanehoban.github.io/collision"
 	],
 	"file_history":
 	[
+		"/C/Users/a560313/AppData/Local/Temp/scp48587/fidsadm/ProdApp/FI_WEB/FIBAT/bin/jenkinsDeploy.ksh",
+		"/C/Users/a560313/Desktop/.txt",
 		"/C/Users/a560313/Desktop/.ksh",
 		"/C/Users/a560313/Desktop/shanehoban.github.io/collision/j.js",
 		"/C/Users/a560313/a560313_GFIR_Core_02.00.00_rtp_d/GFIR/GFIR_Production_main/FI_WEB/FIBAT/dist/build.properties",
@@ -162,15 +145,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 820,
+						"buffer_size": 945,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								642,
-								648
+								0,
+								0
 							]
 						],
 						"settings":
@@ -182,7 +165,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 4,
+					"stack_index": 2,
 					"type": "text"
 				},
 				{
@@ -191,15 +174,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 3789,
+						"buffer_size": 4287,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								3789
+								1278,
+								1278
 							]
 						],
 						"settings":
@@ -208,42 +191,14 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 594.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 1,
 					"type": "text"
 				},
 				{
 					"buffer": 2,
-					"file": "/C/Users/a560313/Desktop/.txt",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 868,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								783,
-								783
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Text/Plain text.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 0,
-					"type": "text"
-				},
-				{
-					"buffer": 3,
 					"file": "col.css",
 					"semi_transient": false,
 					"settings":
@@ -268,35 +223,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
-					"type": "text"
-				},
-				{
-					"buffer": 4,
-					"file": "/C/Users/a560313/AppData/Local/Temp/scp48587/fidsadm/ProdApp/FI_WEB/FIBAT/bin/jenkinsDeploy.ksh",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 14665,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								2570,
-								2570
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/ShellScript/Shell-Unix-Generic.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 1257.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 1,
+					"stack_index": 0,
 					"type": "text"
 				}
 			]
