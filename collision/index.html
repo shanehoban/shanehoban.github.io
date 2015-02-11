@@ -6,15 +6,27 @@
 <body>
 
 
-
-	<div class="col-game" tabindex="0" autofocus>
-		<div class="col-player"></div>
+	<div class="col-viewport">
+		<div class="col-game" tabindex="0" autofocus>
+			<div class="col-player"></div>
+		</div>
 	</div>
 
 	<div class="debug">
 
-		<div>Width: <span class="debug-width"></span></div>
-		<div>Height: <span class="debug-height"></span></div>
+	<h2> Game </h2>
+		<div>Width: <span class="debug-game-width"></span></div>
+		<div>Height: <span class="debug-game-height"></span></div>
+
+	<br>
+
+	<h2> Viewport </h2>
+		<div>Width: <span class="debug-viewport-width"></span></div>
+		<div>Height: <span class="debug-viewport-height"></span></div>
+		<div>Moved Left: <span class="debug-viewport-left"></span></div>
+
+		<br>
+
 		<div>Keydown: <span class="debug-key"></span></div>
 		<div>Last Action: <span class="debug-last-action"></span></div>
 
@@ -26,9 +38,11 @@
 		<div>Keydown Count: <span class="debug-button-down-count"></span></div>
 
 		<br>
+		
 		<h2>Pos</h2>
-		<div>Top: <span class="debug-player-top"></span></div>
-		<div>left: <span class="debug-player-left"></span></div>
+			<div>Top: <span class="debug-player-top"></span></div>
+			<div>Left: <span class="debug-player-left"></span></div>
+			<div>Right: <span class="debug-player-right"></span></div>
 
 
 	</div>
