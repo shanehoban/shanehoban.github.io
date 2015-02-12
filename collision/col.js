@@ -1,5 +1,7 @@
 var Game = {
 		game: $('.col-game'),
+		bgMain: $('.col-bg.main'),
+		bgGrass: $('.col-bg.grass'),
 		viewport: $('.col-viewport'),
 		gravity: 1,
 		friction: 1,
@@ -13,7 +15,8 @@ var Game = {
 	Game.height = Game.game.height();
 	Game.viewport.width = Game.viewport.width();
 	Game.viewport.height = Game.viewport.height();
-	Game.viewport.move = (Game.viewport.width/100) * 70;
+	Game.viewport.maxMoveRight = (Game.viewport.width/100) * 70;
+	Game.viewport.maxMoveLeft = (Game.viewport.width/100) * 30;
 	Game.viewport.left = 0;
 
 var game = Game.game;
@@ -89,11 +92,13 @@ Game.recalc = function(){
 			Player.currentSpeed = (Player.currentSpeed+(Game.acceleration/Game.friction)) ;
 			Player.currentSpeed = (Player.currentSpeed >= Game.maxSpeed) ? Game.maxSpeed : Player.currentSpeed;
 
-			if(p.position().left >= Game.viewport.move){
-				Game.game.css("margin-left", "-=" + Player.currentSpeed);
-				Game.viewport.left += Player.currentSpeed;
-					setTimeout(function(){ 
-						Player.moveRight(); 
+			if(p.position().left >= Game.viewport.maxMoveRight){
+				Game.bgMain.css("left", "-=" + (Player.currentSpeed/5));
+				Game.bgGrass.css("left", "-=" + Player.currentSpeed);
+				Game.game.css("left", "-=" + Player.currentSpeed);
+				p.css("left", "+=" + Player.currentSpeed);
+					setTimeout(function(){
+						Player.moveRight();
 					}, Game.reDrawMs);
 			}
 			else{
@@ -110,19 +115,31 @@ Game.recalc = function(){
 	Player.moveLeft = function(){
 		Game.recalc();
 
-		if(p.position().left <= 0){
-			p.css("left", 0);
-			return;
-		}
-
 		if(Player.isMovingLeft){
 			Player.currentSpeed += (Player.currentSpeed === 0) ? Game.startSpeed : 0;
 			Player.currentSpeed = (Player.currentSpeed+(Game.acceleration/Game.friction)) ;
 			Player.currentSpeed = (Player.currentSpeed >= Game.maxSpeed) ? Game.maxSpeed : Player.currentSpeed;
-			p.css("left", "-=" + Player.currentSpeed);
-				setTimeout(function(){
-					Player.moveLeft();
-				}, Game.reDrawMs);
+
+			if(p.position().left <= 0){
+				p.css("left", 0);
+				return;
+			}
+
+			if(p.position().left >= Game.viewport.maxMoveLeft){
+				Game.bgMain.css("left", "+=" + (Player.currentSpeed/5));
+				Game.bgGrass.css("left", "+=" + Player.currentSpeed);
+				Game.game.css("left", "+=" + Player.currentSpeed);
+				p.css("left", "-=" + Player.currentSpeed);
+					setTimeout(function(){
+						Player.moveLeft();
+					}, Game.reDrawMs);
+			}
+			else{
+			 	p.css("left", "-=" + Player.currentSpeed);
+					setTimeout(function(){ 
+			 			Player.moveLeft(); 
+			 		}, Game.reDrawMs);
+			}
 		}
 		renderDebug("moveLeft");
 	};
