@@ -7,6 +7,7 @@
 	var DOWN = 40;
 	var GAME_SIZE = 2000;
 	var SNAKE = [];
+	var INTERVALS = [];
 
 //////////////////////////
 
@@ -31,7 +32,9 @@ function resetGame(){
 	SNAKE.push((position-1));
 	SNAKE.push((position-2));
 
+	removeAnimations()
 	generateFruit();
+	$('.game-overlay').hide();
 	moveSnake();
 }
 
@@ -40,14 +43,37 @@ function generateFruit(){
 	game.find('#b' + fruit).addClass('fruit');
 }
 
+function endGame(){
+	$('.score-val').addClass('animated hinge');
+	for(var i = 0; i < INTERVALS.length; i++){
+		clearInterval(INTERVALS[i]);
+	}
+	$('.game-overlay').fadeIn('fast');
+}
+
+function removeAnimations(){
+	$('.score-val').removeClass('animated hinge');
+	$('.score-val').removeClass('animated bounce');
+}
+
+function updateScore(){
+	SCORE = SNAKE.length - 3;
+	$('.score-val').html(SCORE);
+	if(SCORE % 5 === 0 && SCORE !== 0){
+		$('.score-val').addClass('animated bounce');
+	} else {
+		removeAnimations();
+	}
+}
+
 function moveSnake(){
 	var moveDir = 0;
 
-	setInterval(function() {
+	INTERVALS.push(setInterval(function() {
 	  if (moveDir !== 0) {
 	  	move(moveDir);
 	  }
-	}, 100);
+	}, 100));
 
 	$(document).keydown(function(e) {
 	  if (e.which === RIGHT && moveDir !== 'l') {
@@ -90,15 +116,18 @@ function moveSnake(){
 
 		//Check whether snake has hit itself
 		if ($('#b'+nextLocation).hasClass('snake')){
-			alert('Game over!');
+			
+			endGame();
+			return;
+
 			for (var i=0;i<=SNAKE.length;i++){
 				//remove snake from [i]
 				$('#b'+SNAKE[i]).removeClass('snake');
-
 			}
 			// kill the snake
 			SNAKE = [];
 			moveDir = 0;
+			SCORE = 0;
 		}
 
 		// if snake is going left, the %50 box is the last on the left
@@ -130,11 +159,13 @@ function moveSnake(){
 			$('#b'+SNAKE[i]).addClass('snake');
 		}
 		SNAKE[SNAKE.length-1] = nextLocation;
-		$('.score').html(SNAKE.length - 3);
+		updateScore();
 		$('#b'+nextLocation).addClass('snake-head');
 		$('#b'+currentLocation).removeClass('snake-head');	
 		
 	};
 };
+
+$('.game-over button').on('click', resetGame);
 
 resetGame();
