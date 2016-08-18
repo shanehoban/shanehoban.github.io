@@ -1,0 +1,75 @@
+* { margin: 0; padding: 0;}
+
+@keyframes changewidth {
+  from {
+  	box-shadow: 0;
+  	border-radius: 0;
+  }
+
+  to {
+  	border-radius: 100%;
+    box-shadow: 0 0 10px orange;
+  }
+}
+
+body {
+	width: 500px;
+	margin: 0 auto;
+	padding-top: 75px;
+	font-family: calibri;
+	background: #DDD;
+	
+}
+
+.game{
+	position: relative;
+	width: 500px;
+	background: #eaeaea;
+	margin: 0 auto;
+	line-height: 0;
+
+	display: flex;
+	flex-direction: row wrap;
+	flex-flow: row wrap;
+}
+
+.game div{
+	position: relative;
+	display: block;
+	width: 10px;
+	height: 10px;
+	padding: 0;
+	border: 0;
+	outline: 1px solid lightgray;
+}
+
+.fruit{
+	background: red;
+	z-index: 100;
+	outline: 0;
+
+	animation-duration: 1s;
+	animation-name: changewidth;
+	animation-iteration-count: infinite;
+	animation-direction: alternate;
+}
+
+.snake{
+	background: #666;
+}
+
+.snake-head{
+	background: blue;
+}
+
+.score {
+    margin-top: 20px;
+    background: #4f4f4f;
+    padding: 10px;
+    font-size: 70px;
+    color: #fff;
+    text-shadow: -4px 3px 0 #343434;
+    text-align: center;
+    line-height: 129px;
+    border-radius: 3px;
+}

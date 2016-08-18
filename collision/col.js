@@ -3,7 +3,7 @@ var Game = {
 		bgMain: $('.col-bg.main'),
 		bgGrass: $('.col-bg.grass'),
 		viewport: $('.col-viewport'),
-		gravity: 1,
+		gravity: 3,
 		friction: 1,
 		startSpeed: 1,
 		maxSpeed: 5,
@@ -125,8 +125,8 @@ Game.recalc = function(){
 				return;
 			}
 
-			if(p.position().left >= Game.viewport.maxMoveLeft){
-				Game.bgMain.css("left", "+=" + (Player.currentSpeed/5));
+			if(p.position().left <= Game.viewport.maxMoveLeft){
+				Game.bgMain.css("left", "+=" + (Player.currentSpeed*5));
 				Game.bgGrass.css("left", "+=" + Player.currentSpeed);
 				Game.game.css("left", "+=" + Player.currentSpeed);
 				p.css("left", "-=" + Player.currentSpeed);
