@@ -6,8 +6,6 @@
 </head>
 <body>
 
-	
-
 	<div class="game-wrapper">
 
 		<div class="game-overlay">
@@ -25,6 +23,13 @@
 	<div class="score">
 		<div class="score-val">0</div>
 	</div>
+
+	<div class="game-speed">
+		<input type="number" value=100 min=5 max=1000 step=5 onChange="javascript: gameSpeed = this.value">
+		<button onClick="javascript: endGame(); resetGame(); startGame();">Go</button>
+		<small>lower number = faster</small>
+	</div>
+	
 
 	<div class="debug">
 		Snake Location

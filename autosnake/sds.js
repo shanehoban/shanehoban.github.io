@@ -8,6 +8,7 @@
 	var GAME_SIZE = 2000;
 	var SNAKE = [];
 	var INTERVALS = [];
+	var gameSpeed = 100;
 
 
 //////////////////////////
@@ -92,7 +93,7 @@ function moveSnake(){
 	  if (moveDir !== 0) {
 	  	move(moveDir);
 	  }
-	}, 100));
+	}, gameSpeed));
 
 	$(document).keydown(function(e) {
 	  if (e.which === RIGHT && moveDir !== 'l') {
@@ -238,11 +239,10 @@ function moveSnake(){
 	};
 };
 
-$('.game-over button').on('click', resetGame);
-
-resetGame();
-
-
-$(document).ready(function(){
+function startGame(){
 	$(document).trigger(downE);
-});
+}
+
+$('.game-over button').on('click', resetGame);
+resetGame();
+startGame();

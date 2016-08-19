@@ -139,3 +139,16 @@ footer{
     text-decoration: none;
     color: #0082f2;
 }
+
+.game-speed {
+    padding: 10px 0;
+}
+
+.game-speed button,
+.game-speed input{
+  padding: 5px 10px;
+}
+
+.game-speed small{
+  color: gray;
+}
