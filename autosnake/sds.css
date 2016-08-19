@@ -1,0 +1,141 @@
+* { margin: 0; padding: 0;}
+
+.animated {
+  animation-duration: 2.5s;
+  animation-fill-mode: both;
+  animation-iteration-count: infinite;
+}
+
+@keyframes changewidth {
+  from {
+  	box-shadow: 0;
+  	border-radius: 0;
+  }
+
+  to {
+  	border-radius: 100%;
+    box-shadow: 0 0 10px orange;
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+  40% {transform: translateY(-30px);}
+  60% {transform: translateY(-15px);}
+}
+.bounce {
+  animation-name: bounce;
+}
+
+@keyframes hinge {
+  0% {transform: rotate(0);transform-origin: top left;animation-timing-function: ease-in-out;}
+  20%, 60% {transform: rotate(80deg);transform-origin: top left;animation-timing-function: ease-in-out;}
+  40% {transform: rotate(60deg);transform-origin: top left;animation-timing-function: ease-in-out;}
+  80% {transform: rotate(60deg) translateY(0);transform-origin: top left;animation-timing-function: ease-in-out;}
+  100% {transform: translateY(700px);}
+}
+.hinge {
+  animation-name: hinge;
+  animation-iteration-count: 1;
+}
+
+body {
+	width: 500px;
+	margin: 0 auto;
+	padding-top: 75px;
+	font-family: calibri;
+	background: #DDD;
+	overflow-y: scroll;
+}
+
+.game-wrapper{
+	position: relative;
+}
+
+.game{
+	position: relative;
+	width: 500px;
+	background: #eaeaea;
+	margin: 0 auto;
+	line-height: 0;
+
+	display: flex;
+	flex-direction: row wrap;
+	flex-flow: row wrap;
+}
+
+.game div{
+	position: relative;
+	display: block;
+	width: 10px;
+	height: 10px;
+	padding: 0;
+	border: 0;
+	outline: 1px solid lightgray;
+}
+
+.fruit{
+	background: red;
+	z-index: 100;
+	outline: 0;
+
+	animation-duration: 1s;
+	animation-name: changewidth;
+	animation-iteration-count: infinite;
+	animation-direction: alternate;
+}
+
+.snake{
+	background: #666;
+}
+
+.snake-head{
+	background: blue;
+}
+
+.score {
+    margin-top: 20px;
+    background: #4f4f4f;
+    padding: 10px;
+    font-size: 70px;
+    color: #fff;
+    text-shadow: -4px 3px 0 #343434;
+    text-align: center;
+    line-height: 129px;
+    border-radius: 3px;
+}
+
+
+.game-overlay {
+	display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #cdcdcd;
+    z-index: 101;
+    text-align: center;
+    color: #fff;
+    font-size: 60px;
+    padding-top: 54px;
+    text-shadow: -3px 3px 0 #9c9c9c;
+}
+
+.game-overlay button{
+	cursor: pointer;
+	border-radius: 5px;
+	border: 0;
+	padding: 10px 20px;
+	text-shadow: -1px 1px 0 rgba(255,255,255,0.2);
+}
+
+
+footer{
+	margin-top: 5px;
+}
+
+.twitter {
+    text-decoration: none;
+    color: #0082f2;
+}
