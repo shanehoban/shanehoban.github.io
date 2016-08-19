@@ -55,7 +55,7 @@ function resetGame(){
 
 function generateFruit(){
 	var fruit = Math.floor(Math.random() * GAME_SIZE) + 1;
-	if(fruit > 1950){
+	if(fruit > 1950 || game.find('#b' + fruit).hasClass('snake') || game.find('#b' + fruit).hasClass('snake-head')){
 		generateFruit();
 	} else {
 		game.find('#b' + fruit).addClass('fruit');
@@ -96,13 +96,13 @@ function moveSnake(){
 	}, gameSpeed));
 
 	$(document).keydown(function(e) {
-	  if (e.which === RIGHT && moveDir !== 'l') {
+	  if (e.which === RIGHT) {
 	    moveDir = 'r';
-	  } else if (e.which === LEFT && moveDir !== 'r') {
+	  } else if (e.which === LEFT) {
 	    moveDir = 'l';
-	  } else if (e.which === UP && moveDir !== 'd') {
+	  } else if (e.which === UP) {
 	    moveDir = 'u';
-	  } else if (e.which === DOWN && moveDir !== 'u') {
+	  } else if (e.which === DOWN) {
 	    moveDir = 'd';
 	  }
 	});
@@ -187,54 +187,125 @@ function moveSnake(){
 		$('.snake-direction').html(moveDir);
 		$('.fruit-location').html(fruitID);
 
-		var snakeDetector = false;
+		var leftDetected = $('#b'+ (nextLocation-1)).hasClass('snake') ? true : false;
+		var rightDetected = $('#b'+ (nextLocation+1)).hasClass('snake') ? true : false;
+		var upDetected = $('#b'+ (nextLocation-50)).hasClass('snake') ? true : false;
+		var downDetected = $('#b'+ (nextLocation+50)).hasClass('snake') ? true : false;
 
-		snakeDetector = $('#b'+ (nextLocation-1)).hasClass('snake') ? true : snakeDetector;
-		snakeDetector = $('#b'+ (nextLocation+1)).hasClass('snake') ? true : snakeDetector;
-		snakeDetector = $('#b'+ (nextLocation-50)).hasClass('snake') ? true : snakeDetector;
-		snakeDetector = $('#b'+ (nextLocation+50)).hasClass('snake') ? true : snakeDetector;
+		if(leftDetected){console.log('left detected');}
+		if(rightDetected){console.log('right detected');}
+		if(upDetected){console.log('up detected');}
+		if(downDetected){console.log('down detected');}
+
+		if(leftDetected && rightDetected && upDetected && downDetected){
+			console.log('self-destructed');
+			endGame();
+			return;
+		}
+
+		if(downDetected && moveDir === 'd'){
+			if(!leftDetected && rightDetected){
+				console.log('detected down & right, moving left', moveDir);
+				$(document).trigger(leftE);
+				return;
+			}
+			if(leftDetected && !rightDetected){
+				console.log('detected down & left, moving right', moveDir);
+				$(document).trigger(rightE);
+				return;
+			}
+
+			console.log('left', moveDir);
+			$(document).trigger(leftE);
+			return;
+		}
+
+		if(upDetected && moveDir === 'u'){
+			if(!leftDetected && rightDetected){
+				console.log('detected up & right, moving left', moveDir);
+				$(document).trigger(leftE);
+				return;
+			}
+			if(leftDetected && !rightDetected){
+				console.log('detected up & left, moving right', moveDir);
+				$(document).trigger(rightE);
+				return;
+			}
+
+			console.log('left', moveDir);
+			$(document).trigger(leftE);
+			return;
+		}
+
+		if(leftDetected && moveDir === 'l'){
+			if(!upDetected && downDetected){
+				console.log('detected left & down, moving up', moveDir);
+				$(document).trigger(upE);
+				return;
+			}
+			if(upDetected && !downDetected){
+				console.log('detected left & up, moving down', moveDir);
+				$(document).trigger(downE);
+				return;
+			}
+			
+			console.log('down', moveDir);
+			$(document).trigger(downE);
+			return;
+		}
+
+		if(rightDetected && moveDir === 'r'){
+			if(!upDetected && downDetected){
+				console.log('detected right & down, moving up', moveDir);
+				$(document).trigger(upE);
+				return;
+			}
+			if(upDetected && !downDetected){
+				console.log('detected right & up, moving down', moveDir);
+				$(document).trigger(downE);
+				return;
+			}
+			
+			console.log('down', moveDir);
+			$(document).trigger(downE);
+			return;
+		}
 
 		var fruitRow = Math.floor(fruitID/50);
 		var snakeRow = Math.floor(nextLocation/50);
 
 		if(fruitRow === snakeRow){
-			if(nextLocation%50 > fruitID%50){
+			if(nextLocation%50 > fruitID%50 && !leftDetected){
 				console.log('left', moveDir);
 				$(document).trigger(leftE);
-			} else {
+			} else if(!rightDetected){
 				console.log('right', moveDir);
 				$(document).trigger(rightE);
 			}
 			return;
 		}
 
-		
-
-		if(nextLocation > fruitID && moveDir !== 'u' && moveDir !== 'd'){
+		if(nextLocation > fruitID && moveDir !== 'u' && moveDir !== 'd' && !upDetected){
 			console.log('up', moveDir);
 			$(document).trigger(upE);
 			return;
-		} else if(fruitID > nextLocation && moveDir !== 'u' && moveDir !== 'd'){
+		} else if(fruitID > nextLocation && moveDir !== 'u' && moveDir !== 'd' && !downDetected){
 			console.log('down', moveDir);
 			$(document).trigger(downE);
 			return;
 		}
 
-					
-
-		if((nextLocation-fruitID)%10 === 0 && moveDir !== 'u' && moveDir !== 'd'){
+		if((nextLocation-fruitID)%10 === 0 && moveDir !== 'u' && moveDir !== 'd' && !upDetected){
 			console.log('up', moveDir);
 			$(document).trigger(upE);
 			return;
 		}
 
-		if((fruitID-nextLocation)%10 === 0 && moveDir !== 'u' && moveDir !== 'd'){
+		if((fruitID-nextLocation)%10 === 0 && moveDir !== 'u' && moveDir !== 'd' && !downDetected){
 			console.log('down', moveDir);
 			$(document).trigger(downE);
 			return;
 		}
-
-
 
 	};
 };
