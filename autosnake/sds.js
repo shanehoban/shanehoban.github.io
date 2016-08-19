@@ -54,8 +54,12 @@ function resetGame(){
 
 function generateFruit(){
 	var fruit = Math.floor(Math.random() * GAME_SIZE) + 1;
-	game.find('#b' + fruit).addClass('fruit');
-	fruitID = fruit;
+	if(fruit > 1950){
+		generateFruit();
+	} else {
+		game.find('#b' + fruit).addClass('fruit');
+		fruitID = fruit;
+	}
 }
 
 function endGame(){
