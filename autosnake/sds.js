@@ -5,6 +5,7 @@
 	var RIGHT = 39;
 	var UP = 38;
 	var DOWN = 40;
+
 	var GAME_SIZE = 2000;
 	var SNAKE = [];
 	var INTERVALS = [];
@@ -192,14 +193,20 @@ function moveSnake(){
 		var upDetected = $('#b'+ (nextLocation-50)).hasClass('snake') ? true : false;
 		var downDetected = $('#b'+ (nextLocation+50)).hasClass('snake') ? true : false;
 
-		if(leftDetected){console.log('left detected');}
-		if(rightDetected){console.log('right detected');}
-		if(upDetected){console.log('up detected');}
-		if(downDetected){console.log('down detected');}
+		if(leftDetected && moveDir !== 'r'){console.log('left detected', (nextLocation-1));}
+		if(rightDetected && moveDir !== 'l'){console.log('right detected', (nextLocation+1));}
+		if(upDetected && moveDir !== 'd'){console.log('up detected', (nextLocation-50));}
+		if(downDetected && moveDir !== 'u'){console.log('down detected', (nextLocation+50));}
 
 		if(leftDetected && rightDetected && upDetected && downDetected){
 			console.log('self-destructed');
 			endGame();
+			return;
+		}
+
+		if(!!SNAKE.reduce(function(a, b){ return (a === b) ? a : NaN; })){
+			console.log('wtf - going right', moveDir);
+			$(document).trigger(rightE);
 			return;
 		}
 
