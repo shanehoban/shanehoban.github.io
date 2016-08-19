@@ -186,13 +186,28 @@ function moveSnake(){
 		$('.snake-direction').html(moveDir);
 		$('.fruit-location').html(fruitID);
 
-		if(fruitID%50 < 50 && nextLocation%50 <50 && moveDir !== 'r'){
-			console.log('right', moveDir);
-			$(document).trigger(rightE);
+		var snakeDetector = false;
+
+		snakeDetector = $('#b'+ (nextLocation-1)).hasClass('snake') ? true : snakeDetector;
+		snakeDetector = $('#b'+ (nextLocation+1)).hasClass('snake') ? true : snakeDetector;
+		snakeDetector = $('#b'+ (nextLocation-50)).hasClass('snake') ? true : snakeDetector;
+		snakeDetector = $('#b'+ (nextLocation+50)).hasClass('snake') ? true : snakeDetector;
+
+		var fruitRow = Math.floor(fruitID/50);
+		var snakeRow = Math.floor(nextLocation/50);
+
+		if(fruitRow === snakeRow){
+			if(nextLocation%50 > fruitID%50){
+				console.log('left', moveDir);
+				$(document).trigger(leftE);
+			} else {
+				console.log('right', moveDir);
+				$(document).trigger(rightE);
+			}
 			return;
 		}
 
-		var snakeDetector = false;
+		
 
 		if(nextLocation > fruitID && moveDir !== 'u' && moveDir !== 'd'){
 			console.log('up', moveDir);
@@ -204,14 +219,7 @@ function moveSnake(){
 			return;
 		}
 
-		snakeDetector = $('#b'+ (nextLocation-1)).hasClass('snake') ? true : snakeDetector;
-		snakeDetector = $('#b'+ (nextLocation+1)).hasClass('snake') ? true : snakeDetector;
-		snakeDetector = $('#b'+ (nextLocation-50)).hasClass('snake') ? true : snakeDetector;
-		snakeDetector = $('#b'+ (nextLocation+50)).hasClass('snake') ? true : snakeDetector;
-
-		if(snakeDetector){
-			return;
-		}			
+					
 
 		if((nextLocation-fruitID)%10 === 0 && moveDir !== 'u' && moveDir !== 'd'){
 			console.log('up', moveDir);
